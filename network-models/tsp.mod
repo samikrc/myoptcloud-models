@@ -15,9 +15,6 @@ param n, integer, >= 3;
 set V := 1..n;
 /* set of nodes */
 
-/* set E, within V cross V;
- set of arcs */
-
 param c{i in V, j in V};
 /* distance from node i to node j */
 
