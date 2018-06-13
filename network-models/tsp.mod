@@ -15,22 +15,22 @@ param n, integer, >= 3;
 set V := 1..n;
 /* set of nodes */
 
-set E, within V cross V;
-/* set of arcs */
+/* set E, within V cross V;
+ set of arcs */
 
-param c{(i,j) in E};
+param c{i in V, j in V};
 /* distance from node i to node j */
 
-var x{(i,j) in E}, binary;
+var x{i in V, j in V}, binary;
 /* x[i,j] = 1 means that the salesman goes from node i to node j */
 
-minimize total: sum{(i,j) in E} c[i,j] * x[i,j];
+minimize total: sum{i in V, j in V} c[i,j] * x[i,j];
 /* the objective is to make the path length as small as possible */
 
-s.t. leave{i in V}: sum{(i,j) in E} x[i,j] = 1;
+s.t. leave{i in V}: sum{j in V} x[i,j] = 1;
 /* the salesman leaves each node i exactly once */
 
-s.t. enter{j in V}: sum{(i,j) in E} x[i,j] = 1;
+s.t. enter{j in V}: sum{i in V} x[i,j] = 1;
 /* the salesman enters each node j exactly once */
 
 /* Constraints above are not sufficient to describe valid tours, so we
@@ -42,12 +42,12 @@ s.t. enter{j in V}: sum{(i,j) in E} x[i,j] = 1;
    car in each node, he will need to go through all nodes to satisfy
    this requirement, thus, all subtours will be eliminated. */
 
-var y{(i,j) in E}, >= 0;
+var y{i in V, j in V}, >= 0;
 /* y[i,j] is the number of cars, which the salesman has after leaving
    node i and before entering node j; in terms of the network analysis,
    y[i,j] is a flow through arc (i,j) */
 
-s.t. cap{(i,j) in E}: y[i,j] <= (n-1) * x[i,j];
+s.t. cap{i in V, j in V}: y[i,j] <= (n-1) * x[i,j];
 /* if arc (i,j) does not belong to the salesman's tour, its capacity
    must be zero; it is obvious that on leaving a node, it is sufficient
    to have not more than n-1 cars */
@@ -55,7 +55,7 @@ s.t. cap{(i,j) in E}: y[i,j] <= (n-1) * x[i,j];
 s.t. node{i in V}:
 /* node[i] is a conservation constraint for node i */
 
-      sum{(j,i) in E} y[j,i]
+      sum{j in V} y[j,i]
       /* summary flow into node i through all ingoing arcs */
 
       + (if i = 1 then n)
@@ -63,10 +63,23 @@ s.t. node{i in V}:
 
       = /* must be equal to */
 
-      sum{(i,j) in E} y[i,j]
+      sum{j in V} y[i,j]
       /* summary flow from node i through all outgoing arcs */
 
       + 1;
       /* plus one car which the salesman sells at node i */
 
 solve;
+
+/*
+data;
+param n := 5;
+param c :   1   2   3   4   5 :=
+        1   0   300 350 520 340
+	2   300 0   250 400 315
+	3   350 250 0   120 350
+	4   520 400 120 0   300
+	5   340 315 350 300 0 ;
+
+end;
+*/
